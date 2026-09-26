@@ -14,7 +14,7 @@
     --border: #262e3b;
     --text: #e8ecf1;
     --text-muted: #8892a1;
-    --text-faint: #565f6e;
+    --text-faint: #9aa5b5;
     --open: #34c48d;
     --warn: #f0a857;
     --full: #e2584a;
@@ -32,47 +32,47 @@
     line-height: 1.5;
     min-height: 100vh;
   }
-  #app{ max-width: 1040px; margin: 0 auto; padding: 20px 16px 60px; }
+  #app{ max-width: 1320px; margin: 0 auto; padding: 20px 16px 60px; }
 
   .top{
     padding: 2px 0 14px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 16px;
   }
-  h1{ font-size: 19px; font-weight: 700; margin: 0 0 3px; letter-spacing: -0.01em; }
-  .subtitle{ color: var(--text-muted); font-size: 12.5px; margin: 0 0 12px; }
-  .sync-status{ font-size: 11px; color: var(--text-faint); margin: 0 0 12px; font-family: var(--font-mono); }
+  h1{ font-size: 25px; font-weight: 700; margin: 0 0 3px; letter-spacing: -0.01em; }
+  .subtitle{ color: var(--text-muted); font-size: 16px; margin: 0 0 12px; }
+  .sync-status{ font-size: 14px; color: var(--text-faint); margin: 0 0 12px; font-family: var(--font-mono); }
   .sync-status.offline{ color: var(--full); }
 
   .team-row{ display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .team-row label{ font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .team-row label{ font-size: 16px; color: var(--text-muted); white-space: nowrap; }
   .team-row input{
     flex: 1; min-width: 150px; max-width: 240px;
     background: var(--panel); border: 1px solid var(--border);
     color: var(--text); font-family: var(--font-sans);
-    padding: 7px 10px; border-radius: 6px; font-size: 13.5px; outline: none;
+    padding: 7px 10px; border-radius: 6px; font-size: 18px; outline: none;
   }
   .team-row input:focus{ border-color: var(--mine); }
-  .team-hint{ font-size: 11.5px; color: var(--full); min-height: 14px; margin-top: 5px; }
+  .team-hint{ font-size: 15px; color: var(--full); min-height: 14px; margin-top: 5px; }
 
-  .legend{ display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); margin-top: 10px; }
+  .legend{ display: flex; gap: 14px; flex-wrap: wrap; font-size: 15px; color: var(--text-muted); margin-top: 10px; }
   .legend span{ display: inline-flex; align-items: center; gap: 5px; }
   .dot{ width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 
   .grid-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; }
-  table.grid{ border-collapse: collapse; width: 100%; min-width: 780px; }
-  .grid th, .grid td{ border: 1px solid var(--border); text-align: center; padding: 7px 4px; font-size: 12px; }
+  table.grid{ border-collapse: collapse; width: 100%; min-width: 1100px; }
+  .grid th, .grid td{ border: 1px solid var(--border); text-align: center; padding: 12px 8px; font-size: 16px; }
   .grid thead th{ position: sticky; top: 0; background: var(--panel); z-index: 1; font-weight: 600; padding: 6px 4px; }
   .grid thead th.time-col, .grid td.time-col{
     position: sticky; left: 0; background: var(--panel); z-index: 2;
     text-align: left; padding-left: 10px; font-family: var(--font-mono);
-    font-size: 11.5px; color: var(--text-muted); white-space: nowrap; min-width: 108px;
+    font-size: 15px; color: var(--text-muted); white-space: nowrap; min-width: 108px;
   }
   .grid thead th.time-col{ z-index: 3; }
-  .day-label{ font-weight: 600; font-size: 12px; }
-  .day-date{ font-weight: 400; font-size: 10.5px; color: var(--text-faint); }
+  .day-label{ font-weight: 600; font-size: 16px; }
+  .day-date{ font-weight: 400; font-size: 14px; color: var(--text-faint); }
 
-  td.slot-cell{ font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: filter 0.12s ease; min-width: 60px; }
+  td.slot-cell{ font-family: var(--font-mono); font-size: 16px; cursor: pointer; transition: filter 0.12s ease; min-width: 60px; }
   td.slot-cell:hover{ filter: brightness(1.15); }
   .st-open{ background: rgba(52,196,141,0.09); color: var(--open); }
   .st-warn{ background: rgba(240,168,87,0.13); color: var(--warn); }
@@ -80,43 +80,45 @@
   .st-mine{ background: var(--mine-bg) !important; color: var(--text) !important; box-shadow: inset 0 0 0 2px var(--mine); font-weight: 600; }
 
   details.panel{ margin-bottom: 12px; }
-  details.panel summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); padding: 4px 0; }
-  .teamlist{ font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); margin-top: 8px; }
+  details.panel summary{ cursor: pointer; font-size: 16px; color: var(--text-faint); padding: 4px 0; }
+  .teamlist{ font-family: var(--font-mono); font-size: 15px; color: var(--text-muted); margin-top: 8px; }
   .teamlist-row{ padding: 3px 0; border-bottom: 1px solid var(--panel-alt); }
   .teamlist-row b{ color: var(--text); font-weight: 600; }
-  .teamlist-empty{ color: var(--text-faint); font-size: 12px; }
+  .teamlist-empty{ color: var(--text-faint); font-size: 16px; }
 
-  .footer-note{ margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-faint); }
+  .footer-note{ margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 15px; color: var(--text-faint); }
 
   .admin{ margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--border); }
-  .admin summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); }
+  .admin summary{ cursor: pointer; font-size: 16px; color: var(--text-faint); }
   .admin-body{ margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .admin-body input{
     background: var(--panel); border: 1px solid var(--border); color: var(--text);
-    padding: 6px 10px; border-radius: 5px; font-size: 12px; font-family: var(--font-mono);
+    padding: 6px 10px; border-radius: 5px; font-size: 16px; font-family: var(--font-mono);
   }
   .admin-body button{
     background: var(--full); color: #2a0d0a; border: none; border-radius: 5px;
-    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+    padding: 6px 12px; font-size: 16px; font-weight: 600; cursor: pointer;
   }
 
   .log{ margin-top: 14px; }
-  .log summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); }
+  .log summary{ cursor: pointer; font-size: 16px; color: var(--text-faint); }
   .log-toolbar{ margin: 10px 0; }
   .log-toolbar button{
     background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);
-    border-radius: 5px; padding: 5px 10px; font-size: 11.5px; cursor: pointer;
+    border-radius: 5px; padding: 5px 10px; font-size: 15px; cursor: pointer;
   }
   .log-toolbar button:hover{ color: var(--text); border-color: var(--text-faint); }
-  .log-table{ width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
+  .log-table{ width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 15px; }
   .log-table th{ text-align: left; color: var(--text-faint); font-weight: 500; padding: 4px 8px 6px 0; border-bottom: 1px solid var(--border); }
   .log-table td{ padding: 5px 8px 5px 0; border-bottom: 1px solid var(--panel-alt); color: var(--text-muted); white-space: nowrap; }
   .log-table td.action-booked{ color: var(--open); }
   .log-table td.action-cancelled{ color: var(--full); }
-  .log-empty{ color: var(--text-faint); font-size: 12px; padding: 8px 0; }
+  .log-empty{ color: var(--text-faint); font-size: 16px; padding: 8px 0; }
   .log-scroll{ max-height: 300px; overflow-y: auto; }
 
-  .status{ text-align: center; color: var(--text-muted); font-size: 13px; padding: 40px 0; }
+  .status{ text-align: center; color: var(--text-muted); font-size: 17px; padding: 40px 0; }
+  .booking-notice{ position: sticky; top: 8px; z-index: 5; margin: 0 0 16px; padding: 14px 18px; border: 2px solid var(--mine); border-radius: 8px; background: #1b3154; color: #fff; font-size: 18px; font-weight: 600; }
+  td.slot-cell[aria-busy="true"]{ background: #1b3154 !important; color: #fff !important; box-shadow: inset 0 0 0 2px var(--mine); }
 </style>
 </head>
 <body>
@@ -292,7 +294,7 @@
         var cs = capState(count);
         var mine = myKey && teams.some(function(t){ return normKey(t) === myKey; });
         var td = el("td", "slot-cell st-" + cs + (mine ? " st-mine" : ""), count + "/" + CAPACITY);
-        if(pendingSlot === id){ td.textContent = pendingLabel; td.style.opacity = "0.65"; td.setAttribute("aria-busy", "true"); } if(pendingSlot) td.style.cursor = "wait";
+        if(pendingSlot === id){ td.textContent = pendingLabel;  td.setAttribute("aria-busy", "true"); } if(pendingSlot) td.style.cursor = "wait";
         td.title = teams.length ? teams.join(", ") : "No bookings yet";
         td.addEventListener("click", function(){ toggleBooking(id, dayTag(day), time); });
         tr.appendChild(td);
@@ -390,6 +392,12 @@
   function renderBody(){
     var body = document.getElementById("bodySection");
     body.innerHTML = "";
+    if(pendingSlot){
+      var notice = el("div", "booking-notice", pendingLabel + " Please wait for confirmation before clicking another slot.");
+      notice.setAttribute("role", "status");
+      notice.setAttribute("aria-live", "polite");
+      body.appendChild(notice);
+    }
     body.appendChild(renderGrid());
     body.appendChild(renderTeamLists());
     body.appendChild(el("div", "footer-note",
