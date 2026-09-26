@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supply Chain Game — Session Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10141b;
+    --panel: #171d26;
+    --panel-alt: #1d2430;
+    --border: #262e3b;
+    --text: #e8ecf1;
+    --text-muted: #8892a1;
+    --text-faint: #565f6e;
+    --open: #34c48d;
+    --warn: #f0a857;
+    --full: #e2584a;
+    --mine: #5b8def;
+    --mine-bg: rgba(91,141,239,0.16);
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  #app{ max-width: 1040px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  .top{
+    padding: 2px 0 14px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  h1{ font-size: 19px; font-weight: 700; margin: 0 0 3px; letter-spacing: -0.01em; }
+  .subtitle{ color: var(--text-muted); font-size: 12.5px; margin: 0 0 12px; }
+  .sync-status{ font-size: 11px; color: var(--text-faint); margin: 0 0 12px; font-family: var(--font-mono); }
+  .sync-status.offline{ color: var(--full); }
+
+  .team-row{ display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .team-row label{ font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .team-row input{
+    flex: 1; min-width: 150px; max-width: 240px;
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--font-sans);
+    padding: 7px 10px; border-radius: 6px; font-size: 13.5px; outline: none;
+  }
+  .team-row input:focus{ border-color: var(--mine); }
+  .team-hint{ font-size: 11.5px; color: var(--full); min-height: 14px; margin-top: 5px; }
+
+  .legend{ display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-muted); margin-top: 10px; }
+  .legend span{ display: inline-flex; align-items: center; gap: 5px; }
+  .dot{ width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+
+  .grid-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; }
+  table.grid{ border-collapse: collapse; width: 100%; min-width: 780px; }
+  .grid th, .grid td{ border: 1px solid var(--border); text-align: center; padding: 7px 4px; font-size: 12px; }
+  .grid thead th{ position: sticky; top: 0; background: var(--panel); z-index: 1; font-weight: 600; padding: 6px 4px; }
+  .grid thead th.time-col, .grid td.time-col{
+    position: sticky; left: 0; background: var(--panel); z-index: 2;
+    text-align: left; padding-left: 10px; font-family: var(--font-mono);
+    font-size: 11.5px; color: var(--text-muted); white-space: nowrap; min-width: 108px;
+  }
+  .grid thead th.time-col{ z-index: 3; }
+  .day-label{ font-weight: 600; font-size: 12px; }
+  .day-date{ font-weight: 400; font-size: 10.5px; color: var(--text-faint); }
+
+  td.slot-cell{ font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: filter 0.12s ease; min-width: 60px; }
+  td.slot-cell:hover{ filter: brightness(1.15); }
+  .st-open{ background: rgba(52,196,141,0.09); color: var(--open); }
+  .st-warn{ background: rgba(240,168,87,0.13); color: var(--warn); }
+  .st-full{ background: rgba(226,88,74,0.13); color: var(--full); cursor: not-allowed; }
+  .st-mine{ background: var(--mine-bg) !important; color: var(--text) !important; box-shadow: inset 0 0 0 2px var(--mine); font-weight: 600; }
+
+  details.panel{ margin-bottom: 12px; }
+  details.panel summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); padding: 4px 0; }
+  .teamlist{ font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); margin-top: 8px; }
+  .teamlist-row{ padding: 3px 0; border-bottom: 1px solid var(--panel-alt); }
+  .teamlist-row b{ color: var(--text); font-weight: 600; }
+  .teamlist-empty{ color: var(--text-faint); font-size: 12px; }
+
+  .footer-note{ margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-faint); }
+
+  .admin{ margin-top: 20px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .admin summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); }
+  .admin-body{ margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .admin-body input{
+    background: var(--panel); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 10px; border-radius: 5px; font-size: 12px; font-family: var(--font-mono);
+  }
+  .admin-body button{
+    background: var(--full); color: #2a0d0a; border: none; border-radius: 5px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  .log{ margin-top: 14px; }
+  .log summary{ cursor: pointer; font-size: 12px; color: var(--text-faint); }
+  .log-toolbar{ margin: 10px 0; }
+  .log-toolbar button{
+    background: var(--panel-alt); color: var(--text-muted); border: 1px solid var(--border);
+    border-radius: 5px; padding: 5px 10px; font-size: 11.5px; cursor: pointer;
+  }
+  .log-toolbar button:hover{ color: var(--text); border-color: var(--text-faint); }
+  .log-table{ width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 11.5px; }
+  .log-table th{ text-align: left; color: var(--text-faint); font-weight: 500; padding: 4px 8px 6px 0; border-bottom: 1px solid var(--border); }
+  .log-table td{ padding: 5px 8px 5px 0; border-bottom: 1px solid var(--panel-alt); color: var(--text-muted); white-space: nowrap; }
+  .log-table td.action-booked{ color: var(--open); }
+  .log-table td.action-cancelled{ color: var(--full); }
+  .log-empty{ color: var(--text-faint); font-size: 12px; padding: 8px 0; }
+  .log-scroll{ max-height: 300px; overflow-y: auto; }
+
+  .status{ text-align: center; color: var(--text-muted); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+<div id="app"><div class="status">Loading schedule…</div></div>
+
+<script>
+(function(){
+  // ===================== CONFIG =====================
+  // Paste the Web App URL you get from deploying AppsScript-Code.gs here:
+  var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwiIir5k5bZ_4adBd06VqAGPuec57GqHBiOKNcAhmJA3Q09Psd8lc6kL9Lvhhymo16z/exec";
+
+  // Edit DAYS / TIMES to change the booking window.
+  var DAYS = [
+    { label: "Wed", short: "30 Sep", date: "2026-09-30" },
+    { label: "Thu", short: "1 Oct",  date: "2026-10-01" },
+    { label: "Fri", short: "2 Oct",  date: "2026-10-02" },
+    { label: "Sat", short: "3 Oct",  date: "2026-10-03" },
+    { label: "Sun", short: "4 Oct",  date: "2026-10-04" },
+    { label: "Mon", short: "5 Oct",  date: "2026-10-05" },
+    { label: "Tue", short: "6 Oct",  date: "2026-10-06" },
+    { label: "Wed", short: "7 Oct",  date: "2026-10-07" },
+    { label: "Thu", short: "8 Oct",  date: "2026-10-08" }
+  ];
+  var TIMES = ["09:00–12:00","12:00–15:00","15:00–18:00","18:00–21:00","21:00–09:00"];
+  var CAPACITY_FALLBACK = 5; // overwritten by the server's value once loaded
+  var POLL_INTERVAL_MS = 15000;
+  // ===================================================
+
+  var CAPACITY = CAPACITY_FALLBACK;
+  var state = { bookings: {}, team: "", log: [], online: true, lastSync: null };
+  var topBuilt = false;
+
+  function slotId(date, time){ return date + "_" + time; }
+  function dayTag(day){ return day.label + " " + day.short; }
+  function normTeam(t){ return (t || "").trim(); }
+  function normKey(t){ return normTeam(t).toLowerCase(); }
+
+  async function fetchData(){
+    try{
+      var res = await fetch(APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now());
+      var data = await res.json();
+      state.bookings = data.bookings || {};
+      state.log = data.log || [];
+      if(data.capacity) CAPACITY = data.capacity;
+      state.online = true;
+      state.lastSync = new Date();
+    }catch(e){
+      console.error("Fetch error", e);
+      state.online = false;
+    }
+  }
+
+  async function postAction(payload){
+    try{
+      var res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      var data = await res.json();
+      state.online = true;
+      state.lastSync = new Date();
+      if(data.error){ alert(data.error); }
+      if(data.bookings) state.bookings = data.bookings;
+      if(data.log) state.log = data.log;
+      if(data.capacity) CAPACITY = data.capacity;
+      return data;
+    }catch(e){
+      console.error("Post error", e);
+      state.online = false;
+      alert("Could not reach the booking server. Check your connection and try again.");
+      return null;
+    }
+  }
+
+  function teamsForSlot(id){ return state.bookings[id] || []; }
+
+  function capState(count){
+    var ratio = count / CAPACITY;
+    if(count >= CAPACITY) return "full";
+    if(ratio >= 0.6) return "warn";
+    return "open";
+  }
+
+  async function toggleBooking(id, dayLabel, time){
+    var team = normTeam(state.team);
+    if(!team){
+      document.getElementById("teamHint").textContent = "Enter your team name before booking.";
+      document.getElementById("teamInput").focus();
+      return;
+    }
+    document.getElementById("teamHint").textContent = "";
+
+    var list = state.bookings[id] || [];
+    var key = normKey(team);
+    var mineNow = list.some(function(t){ return normKey(t) === key; });
+
+    if(!mineNow && list.length >= CAPACITY){
+      alert("This slot just filled up (" + CAPACITY + "/" + CAPACITY + " teams). Pick another time.");
+      return;
+    }
+
+    await postAction({ action: mineNow ? "cancel" : "book", team: team, day: dayLabel, time: time, slotId: id });
+    renderBody();
+  }
+
+  function el(tag, cls, text){
+    var e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function formatTs(ts){
+    try{
+      var d = new Date(ts);
+      return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    }catch(e){ return String(ts); }
+  }
+
+  function downloadLogCsv(){
+    var rows = [["timestamp", "team", "action", "day", "time slot"]];
+    state.log.forEach(function(e){ rows.push([formatTs(e.ts), e.team, e.action, e.day, e.time]); });
+    var csv = rows.map(function(r){
+      return r.map(function(v){
+        var s = String(v == null ? "" : v);
+        return '"' + s.replace(/"/g, '""') + '"';
+      }).join(",");
+    }).join("\r\n");
+    var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "booking-audit-log.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function renderGrid(){
+    var wrap = el("div", "grid-wrap");
+    var table = el("table", "grid");
+
+    var thead = el("thead");
+    var headRow = el("tr");
+    headRow.appendChild(el("th", "time-col", "Time"));
+    DAYS.forEach(function(day){
+      var th = el("th");
+      th.appendChild(el("div", "day-label", day.label));
+      th.appendChild(el("div", "day-date", day.short));
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = el("tbody");
+    var myKey = normKey(state.team);
+
+    TIMES.forEach(function(time){
+      var tr = el("tr");
+      tr.appendChild(el("td", "time-col", time));
+      DAYS.forEach(function(day){
+        var id = slotId(day.date, time);
+        var teams = teamsForSlot(id);
+        var count = teams.length;
+        var cs = capState(count);
+        var mine = myKey && teams.some(function(t){ return normKey(t) === myKey; });
+        var td = el("td", "slot-cell st-" + cs + (mine ? " st-mine" : ""), count + "/" + CAPACITY);
+        td.title = teams.length ? teams.join(", ") : "No bookings yet";
+        td.addEventListener("click", function(){ toggleBooking(id, dayTag(day), time); });
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  function renderTeamLists(){
+    var details = el("details", "panel");
+    var rowsWithBookings = [];
+    DAYS.forEach(function(day){
+      TIMES.forEach(function(time){
+        var id = slotId(day.date, time);
+        var teams = teamsForSlot(id);
+        if(teams.length) rowsWithBookings.push({ tag: dayTag(day) + " · " + time, teams: teams });
+      });
+    });
+    details.appendChild(el("summary", null, "Who's booked what (" + rowsWithBookings.length + " slots in use)"));
+    var body = el("div", "teamlist");
+    if(!rowsWithBookings.length){
+      body.appendChild(el("div", "teamlist-empty", "No bookings yet."));
+    } else {
+      rowsWithBookings.forEach(function(r){
+        var row = el("div", "teamlist-row");
+        row.innerHTML = '<b>' + r.tag + '</b> — ' + r.teams.join(", ");
+        body.appendChild(row);
+      });
+    }
+    details.appendChild(body);
+    return details;
+  }
+
+  function renderLog(){
+    var wrap = el("details", "log");
+    wrap.appendChild(el("summary", null, "Booking history (audit log) — " + state.log.length + " entries"));
+
+    var toolbar = el("div", "log-toolbar");
+    var dlBtn = el("button", null, "Download CSV");
+    dlBtn.addEventListener("click", downloadLogCsv);
+    toolbar.appendChild(dlBtn);
+    wrap.appendChild(toolbar);
+
+    if(!state.log.length){
+      wrap.appendChild(el("div", "log-empty", "No bookings or cancellations recorded yet."));
+      return wrap;
+    }
+
+    var scroll = el("div", "log-scroll");
+    var table = el("table", "log-table");
+    var thead = el("thead");
+    var headRow = el("tr");
+    ["When", "Team", "Action", "Slot"].forEach(function(h){ headRow.appendChild(el("th", null, h)); });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = el("tbody");
+    for(var i = state.log.length - 1; i >= 0; i--){
+      var e = state.log[i];
+      var tr = el("tr");
+      tr.appendChild(el("td", null, formatTs(e.ts)));
+      tr.appendChild(el("td", null, e.team));
+      tr.appendChild(el("td", "action-" + e.action, e.action));
+      tr.appendChild(el("td", null, e.day + " " + e.time));
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    wrap.appendChild(scroll);
+    return wrap;
+  }
+
+  function renderAdmin(){
+    var admin = el("details", "admin");
+    admin.appendChild(el("summary", null, "Instructor: reset schedule"));
+    var body = el("div", "admin-body");
+    var keyInput = el("input");
+    keyInput.placeholder = "Enter reset key";
+    var resetBtn = el("button", null, "Clear all bookings");
+    resetBtn.addEventListener("click", async function(){
+      await postAction({ action: "reset", key: keyInput.value.trim() });
+      renderBody();
+    });
+    body.appendChild(keyInput);
+    body.appendChild(resetBtn);
+    admin.appendChild(body);
+    return admin;
+  }
+
+  function renderBody(){
+    var body = document.getElementById("bodySection");
+    body.innerHTML = "";
+    body.appendChild(renderGrid());
+    body.appendChild(renderTeamLists());
+    body.appendChild(el("div", "footer-note",
+      "Tapping a full slot won't let you in — the server can't take another room in that window. Tap your own highlighted slot again to release it."));
+    body.appendChild(renderLog());
+    body.appendChild(renderAdmin());
+
+    var syncEl = document.getElementById("syncStatus");
+    if(syncEl){
+      syncEl.className = "sync-status" + (state.online ? "" : " offline");
+      syncEl.textContent = state.online
+        ? "Synced" + (state.lastSync ? " " + state.lastSync.toLocaleTimeString() : "")
+        : "Can't reach the booking server — showing the last data loaded.";
+    }
+  }
+
+  function renderTopOnce(){
+    if(topBuilt) return;
+    topBuilt = true;
+    var app = document.getElementById("app");
+    app.innerHTML = "";
+
+    var top = el("div", "top");
+    top.appendChild(el("h1", null, "Supply Chain Game — Session Booking"));
+    top.appendChild(el("p", "subtitle",
+      "Each slot fits " + CAPACITY + " concurrent teams (20-connection server limit). Shared with everyone who has this link — no login needed."));
+    top.appendChild(el("div", "sync-status", "Loading…")).id = "syncStatus";
+
+    var teamRow = el("div", "team-row");
+    var label = el("label", null, "Your team");
+    label.setAttribute("for", "teamInput");
+    var input = el("input");
+    input.id = "teamInput";
+    input.placeholder = "e.g. Team 3";
+    input.addEventListener("input", function(e){ state.team = e.target.value; });
+    teamRow.appendChild(label); teamRow.appendChild(input);
+    top.appendChild(teamRow);
+
+    var hint = el("div", "team-hint", "");
+    hint.id = "teamHint";
+    top.appendChild(hint);
+
+    var legend = el("div", "legend");
+    legend.innerHTML =
+      '<span><span class="dot" style="background:var(--open)"></span>Open</span>' +
+      '<span><span class="dot" style="background:var(--warn)"></span>Filling up</span>' +
+      '<span><span class="dot" style="background:var(--full)"></span>Full</span>' +
+      '<span><span class="dot" style="background:var(--mine)"></span>Your booking</span>' +
+      '<span>Tap a cell to book/cancel · hover or hold for team names</span>';
+    top.appendChild(legend);
+
+    app.appendChild(top);
+
+    var body = el("div");
+    body.id = "bodySection";
+    app.appendChild(body);
+  }
+
+  async function refresh(){
+    await fetchData();
+    renderTopOnce();
+    renderBody();
+  }
+
+  refresh();
+  setInterval(function(){
+    // Don't refresh out from under someone mid-interaction with the admin panel.
+    var active = document.activeElement;
+    if(active && active.tagName === "INPUT" && active.closest(".admin-body")) return;
+    refresh();
+  }, POLL_INTERVAL_MS);
+})();
+</script>
+</body>
+</html>
