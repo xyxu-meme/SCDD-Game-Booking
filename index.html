@@ -147,18 +147,18 @@
 
   var CAPACITY = CAPACITY_FALLBACK;
   var state = { bookings: {}, team: "", log: [], online: true, lastSync: null };
-  var topBuilt = false;
+  var topBuilt = false; var pendingSlot = null; var pendingLabel = ""; var revision = 0;
 
   function slotId(date, time){ return date + "_" + time; }
   function dayTag(day){ return day.label + " " + day.short; }
   function normTeam(t){ return (t || "").trim(); }
   function normKey(t){ return normTeam(t).toLowerCase(); }
 
-  async function fetchData(){
+  async function fetchData(){ var startedRevision = revision; if(pendingSlot) return;
     try{
       var res = await fetch(APPS_SCRIPT_URL + (APPS_SCRIPT_URL.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now());
       var data = await res.json();
-      state.bookings = data.bookings || {};
+      if(pendingSlot || startedRevision !== revision) return; state.bookings = data.bookings || {};
       state.log = data.log || [];
       if(data.capacity) CAPACITY = data.capacity;
       state.online = true;
@@ -201,7 +201,7 @@
     return "open";
   }
 
-  async function toggleBooking(id, dayLabel, time){
+  async function toggleBooking(id, dayLabel, time){ if(pendingSlot) return;
     var team = normTeam(state.team);
     if(!team){
       document.getElementById("teamHint").textContent = "Enter your team name before booking.";
@@ -219,7 +219,16 @@
       return;
     }
 
-    await postAction({ action: mineNow ? "cancel" : "book", team: team, day: dayLabel, time: time, slotId: id });
+    pendingSlot = id;
+    pendingLabel = mineNow ? "Cancelling…" : "Booking…";
+    revision++;
+    renderBody();
+    try {
+      await postAction({ action: mineNow ? "cancel" : "book", team: team, day: dayLabel, time: time, slotId: id });
+    } finally {
+      pendingSlot = null;
+      revision++;
+    }
     renderBody();
   }
 
@@ -283,6 +292,7 @@
         var cs = capState(count);
         var mine = myKey && teams.some(function(t){ return normKey(t) === myKey; });
         var td = el("td", "slot-cell st-" + cs + (mine ? " st-mine" : ""), count + "/" + CAPACITY);
+        if(pendingSlot === id){ td.textContent = pendingLabel; td.style.opacity = "0.65"; td.setAttribute("aria-busy", "true"); } if(pendingSlot) td.style.cursor = "wait";
         td.title = teams.length ? teams.join(", ") : "No bookings yet";
         td.addEventListener("click", function(){ toggleBooking(id, dayTag(day), time); });
         tr.appendChild(td);
@@ -367,6 +377,7 @@
     keyInput.placeholder = "Enter reset key";
     var resetBtn = el("button", null, "Clear all bookings");
     resetBtn.addEventListener("click", async function(){
+      if(pendingSlot) return;
       await postAction({ action: "reset", key: keyInput.value.trim() });
       renderBody();
     });
@@ -389,7 +400,8 @@
     var syncEl = document.getElementById("syncStatus");
     if(syncEl){
       syncEl.className = "sync-status" + (state.online ? "" : " offline");
-      syncEl.textContent = state.online
+      syncEl.setAttribute("role", "status");
+      syncEl.textContent = pendingSlot ? pendingLabel + " Waiting for server confirmation." : state.online
         ? "Synced" + (state.lastSync ? " " + state.lastSync.toLocaleTimeString() : "")
         : "Can't reach the booking server — showing the last data loaded.";
     }
