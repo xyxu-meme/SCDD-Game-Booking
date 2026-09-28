@@ -143,6 +143,7 @@
     { label: "Thu", short: "8 Oct",  date: "2026-10-08" }
   ];
   var TIMES = ["09:00–12:00","12:00–15:00","15:00–18:00","18:00–21:00","21:00–09:00"];
+  var MAX_TEAM_SLOTS = 10;
   var CAPACITY_FALLBACK = 5; // overwritten by the server's value once loaded
   var POLL_INTERVAL_MS = 15000;
   // ===================================================
@@ -194,6 +195,13 @@
     }
   }
 
+  function bookedSlotCount(team){
+    var key = normKey(team);
+    return Object.keys(state.bookings).filter(function(id){
+      return state.bookings[id].some(function(t){ return normKey(t) === key; });
+    }).length;
+  }
+
   function teamsForSlot(id){ return state.bookings[id] || []; }
 
   function capState(count){
@@ -215,6 +223,11 @@
     var list = state.bookings[id] || [];
     var key = normKey(team);
     var mineNow = list.some(function(t){ return normKey(t) === key; });
+
+    if(!mineNow && bookedSlotCount(team) >= MAX_TEAM_SLOTS){
+      document.getElementById("teamHint").textContent = "You have reached the 10-slot limit. Cancel an existing booking before choosing another slot.";
+      return;
+    }
 
     if(!mineNow && list.length >= CAPACITY){
       alert("This slot just filled up (" + CAPACITY + "/" + CAPACITY + " teams). Pick another time.");
@@ -424,7 +437,7 @@
     var top = el("div", "top");
     top.appendChild(el("h1", null, "Supply Chain Game — Session Booking"));
     top.appendChild(el("p", "subtitle",
-      "Each slot fits " + CAPACITY + " concurrent teams (20-connection server limit). Shared with everyone who has this link — no login needed."));
+      "Each slot fits " + CAPACITY + " concurrent teams (20-connection server limit). Maximum 10 slots per team name. Shared with everyone who has this link — no login needed."));
     top.appendChild(el("div", "sync-status", "Loading…")).id = "syncStatus";
 
     var teamRow = el("div", "team-row");
