@@ -142,7 +142,7 @@
     { label: "Wed", short: "7 Oct",  date: "2026-10-07" },
     { label: "Thu", short: "8 Oct",  date: "2026-10-08" }
   ];
-  var TIMES = ["09:00–12:00","12:00–15:00","15:00–18:00","18:00–21:00","21:00–09:00"];
+  var TIMES = ["08:00–11:00","12:00–15:00","15:00–18:00","18:00–21:00","21:00–09:00"];
   var MAX_TEAM_SLOTS = 10;
   var CAPACITY_FALLBACK = 5; // overwritten by the server's value once loaded
   var POLL_INTERVAL_MS = 15000;
@@ -153,6 +153,7 @@
   var topBuilt = false; var pendingSlot = null; var pendingLabel = ""; var revision = 0;
 
   function slotId(date, time){ return date + "_" + time; }
+  function slotAvailable(date, time){ return !(date === "2026-09-30" && time === "08:00–11:00"); }
   function dayTag(day){ return day.label + " " + day.short; }
   function normTeam(t){ return (t || "").trim(); }
   function normKey(t){ return normTeam(t).toLowerCase(); }
@@ -212,6 +213,7 @@
   }
 
   async function toggleBooking(id, dayLabel, time){ if(pendingSlot) return;
+    if(!slotAvailable(id.split("_")[0], time)) return;
     var team = normTeam(state.team);
     if(!team){
       document.getElementById("teamHint").textContent = "Enter your team name before booking.";
@@ -301,6 +303,12 @@
       var tr = el("tr");
       tr.appendChild(el("td", "time-col", time));
       DAYS.forEach(function(day){
+        if(!slotAvailable(day.date, time)){
+          var unavailable = el("td", "", "Unavailable");
+          unavailable.setAttribute("aria-disabled", "true");
+          tr.appendChild(unavailable);
+          return;
+        }
         var id = slotId(day.date, time);
         var teams = teamsForSlot(id);
         var count = teams.length;
@@ -325,6 +333,7 @@
     var rowsWithBookings = [];
     DAYS.forEach(function(day){
       TIMES.forEach(function(time){
+        if(!slotAvailable(day.date, time)) return;
         var id = slotId(day.date, time);
         var teams = teamsForSlot(id);
         if(teams.length) rowsWithBookings.push({ tag: dayTag(day) + " · " + time, teams: teams });
