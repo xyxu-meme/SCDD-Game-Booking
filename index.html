@@ -74,6 +74,8 @@
 
   td.slot-cell{ font-family: var(--font-mono); font-size: 16px; cursor: pointer; transition: filter 0.12s ease; min-width: 60px; }
   td.slot-cell:hover{ filter: brightness(1.15); }
+  td.slot-cell.slot-closed{ cursor: not-allowed; opacity: 0.62; }
+  td.slot-cell.slot-closed:hover{ filter: none; }
   .st-open{ background: rgba(52,196,141,0.09); color: var(--open); }
   .st-warn{ background: rgba(240,168,87,0.13); color: var(--warn); }
   .st-full{ background: rgba(226,88,74,0.13); color: var(--full); cursor: not-allowed; }
@@ -154,6 +156,10 @@
 
   function slotId(date, time){ return date + "_" + time; }
   function slotAvailable(date, time){ return !(date === "2026-09-30" && time === "08:00–11:00"); }
+  function slotHasStarted(date, time){
+    var start = time.split(/[–-]/)[0].trim();
+    return Date.now() >= new Date(date + "T" + start + ":00+08:00").getTime();
+  }
   function dayTag(day){ return day.label + " " + day.short; }
   function normTeam(t){ return (t || "").trim(); }
   function normKey(t){ return normTeam(t).toLowerCase(); }
@@ -213,7 +219,12 @@
   }
 
   async function toggleBooking(id, dayLabel, time){ if(pendingSlot) return;
-    if(!slotAvailable(id.split("_")[0], time)) return;
+    var date = id.split("_")[0];
+    if(!slotAvailable(date, time)) return;
+    if(slotHasStarted(date, time)){
+      alert("This session has already started. Its bookings can no longer be changed.");
+      return;
+    }
     var team = normTeam(state.team);
     if(!team){
       document.getElementById("teamHint").textContent = "Enter your team name before booking.";
@@ -314,10 +325,15 @@
         var count = teams.length;
         var cs = capState(count);
         var mine = myKey && teams.some(function(t){ return normKey(t) === myKey; });
-        var td = el("td", "slot-cell st-" + cs + (mine ? " st-mine" : ""), count + "/" + CAPACITY);
+        var closed = slotHasStarted(day.date, time);
+        var td = el("td", "slot-cell st-" + cs + (mine ? " st-mine" : "") + (closed ? " slot-closed" : ""), count + "/" + CAPACITY);
         if(pendingSlot === id){ td.textContent = pendingLabel;  td.setAttribute("aria-busy", "true"); } if(pendingSlot) td.style.cursor = "wait";
-        td.title = teams.length ? teams.join(", ") : "No bookings yet";
-        td.addEventListener("click", function(){ toggleBooking(id, dayTag(day), time); });
+        td.title = (teams.length ? teams.join(", ") : "No bookings yet") + (closed ? " — booking changes closed" : "");
+        if(closed){
+          td.setAttribute("aria-disabled", "true");
+        }else{
+          td.addEventListener("click", function(){ toggleBooking(id, dayTag(day), time); });
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
