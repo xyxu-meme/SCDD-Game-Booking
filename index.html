@@ -134,18 +134,20 @@
 
   // Edit DAYS / TIMES to change the booking window.
   var DAYS = [
-    { label: "Wed", short: "30 Sep", date: "2026-09-30" },
-    { label: "Thu", short: "1 Oct",  date: "2026-10-01" },
-    { label: "Fri", short: "2 Oct",  date: "2026-10-02" },
-    { label: "Sat", short: "3 Oct",  date: "2026-10-03" },
-    { label: "Sun", short: "4 Oct",  date: "2026-10-04" },
-    { label: "Mon", short: "5 Oct",  date: "2026-10-05" },
-    { label: "Tue", short: "6 Oct",  date: "2026-10-06" },
-    { label: "Wed", short: "7 Oct",  date: "2026-10-07" },
-    { label: "Thu", short: "8 Oct",  date: "2026-10-08" }
+    { label: "Thu", short: "22 Oct", date: "2026-10-22" },
+    { label: "Fri", short: "23 Oct", date: "2026-10-23" },
+    { label: "Mon", short: "26 Oct", date: "2026-10-26" },
+    { label: "Tue", short: "27 Oct", date: "2026-10-27" },
+    { label: "Wed", short: "28 Oct", date: "2026-10-28" },
+    { label: "Thu", short: "29 Oct", date: "2026-10-29" },
+    { label: "Fri", short: "30 Oct", date: "2026-10-30" },
+    { label: "Mon", short: "2 Nov",  date: "2026-11-02" },
+    { label: "Tue", short: "3 Nov",  date: "2026-11-03" },
+    { label: "Wed", short: "4 Nov",  date: "2026-11-04" },
+    { label: "Thu", short: "5 Nov",  date: "2026-11-05" }
   ];
   var TIMES = ["08:00–11:00","12:00–15:00","15:00–18:00","18:00–21:00","21:00–09:00"];
-  var MAX_TEAM_SLOTS = 10;
+  var MAX_TEAM_SLOTS = 15;
   var CAPACITY_FALLBACK = 5; // overwritten by the server's value once loaded
   var POLL_INTERVAL_MS = 15000;
   // ===================================================
@@ -155,7 +157,7 @@
   var topBuilt = false; var pendingSlot = null; var pendingLabel = ""; var revision = 0;
 
   function slotId(date, time){ return date + "_" + time; }
-  function slotAvailable(date, time){ return !(date === "2026-09-30" && time === "08:00–11:00"); }
+  function slotAvailable(date, time){ return true; }
   function slotHasStarted(date, time){
     var start = time.split(/[–-]/)[0].trim();
     return Date.now() >= new Date(date + "T" + start + ":00+08:00").getTime();
@@ -238,7 +240,7 @@
     var mineNow = list.some(function(t){ return normKey(t) === key; });
 
     if(!mineNow && bookedSlotCount(team) >= MAX_TEAM_SLOTS){
-      document.getElementById("teamHint").textContent = "You have reached the 10-slot limit. Cancel an existing booking before choosing another slot.";
+      document.getElementById("teamHint").textContent = "You have reached the " + MAX_TEAM_SLOTS + "-slot limit. Cancel an existing booking before choosing another slot.";
       return;
     }
 
@@ -462,7 +464,7 @@
     var top = el("div", "top");
     top.appendChild(el("h1", null, "Supply Chain Game — Session Booking"));
     top.appendChild(el("p", "subtitle",
-      "Each slot fits " + CAPACITY + " concurrent teams (20-connection server limit). Maximum 10 slots per team name. Shared with everyone who has this link — no login needed."));
+      "Each slot fits " + CAPACITY + " concurrent teams (20-connection server limit). Maximum " + MAX_TEAM_SLOTS + " slots per team name. Shared with everyone who has this link — no login needed."));
     top.appendChild(el("div", "sync-status", "Loading…")).id = "syncStatus";
 
     var teamRow = el("div", "team-row");
