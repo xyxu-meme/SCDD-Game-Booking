@@ -154,7 +154,9 @@
   var topBuilt = false; var pendingSlot = null; var pendingLabel = ""; var revision = 0;
 
   function slotId(date, time){ return date + "_" + time; }
-  function slotAvailable(date, time){ return true; }
+  function slotAvailable(date, time){
+    return !(date === "2026-11-16" && (time === "08:00–11:00" || time === "12:00–15:00"));
+  }
   function slotHasStarted(date, time){
     var start = time.split(/[–-]/)[0].trim();
     return Date.now() >= new Date(date + "T" + start + ":00+08:00").getTime();
